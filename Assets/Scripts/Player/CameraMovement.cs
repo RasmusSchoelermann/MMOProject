@@ -1,12 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Unity.Netcode;
 
-public class ServerAuthPlayerController : NetworkBehaviour
+public class CameraMovement : MonoBehaviour
 {
-    private float movementSpeed;
-
     // Start is called before the first frame update
     void Start()
     {
