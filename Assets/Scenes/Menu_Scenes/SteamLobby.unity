@@ -1827,9 +1827,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b7e855d3fcaf7f459400e13d983d4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ServerPanel: {fileID: 0}
-  ClientPanel: {fileID: 0}
-  MainPanel: {fileID: 0}
+  ServerPanel: {fileID: 654196231}
+  ClientPanel: {fileID: 1079745394}
+  MainPanel: {fileID: 1911603165}
 --- !u!1 &1385190015
 GameObject:
   m_ObjectHideFlags: 0
