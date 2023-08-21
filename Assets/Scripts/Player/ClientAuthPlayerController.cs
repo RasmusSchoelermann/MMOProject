@@ -6,24 +6,27 @@ using Steamworks;
 
 public class ClientAuthPlayerController : NetworkBehaviour
 {
-    public float movementSpeed;
-    public float jumpForce;
-    public float rotationSpeed;
+    public float _movementSpeed;
+    public float _jumpForce;
+    public float _rotationSpeed;
 
-    public bool isJumping;
-
-    public Transform playerTransform;
     public Rigidbody playerRigidbody;
     public CapsuleCollider playerCollider;
 
     public Vector2 _playerInput;
-    public Vector3 newVelocity;
-    public Vector3 newForce;
+    public Vector3 _newVelocity;
+    public Vector3 _newForce;
 
     public LayerMask groundLayer;
 
+    public Transform playerTransform;
     public PlayerMovement playerMovement;
     public PlayerRotation playerRotation;
+    public CameraMovement cameraMovement;
+
+    public Camera playerCam;
+
+    public Vector3 testVelocity;
 
     public override void OnNetworkSpawn()
     {
@@ -33,22 +36,36 @@ public class ClientAuthPlayerController : NetworkBehaviour
 
     private void InitializePlayer()
     {
-        if (playerRotation == null && playerMovement == null)
+        if (!IsOwner)
             return;
 
-        playerMovement.InitializePlayerMovement(this, playerRotation);
+        if (playerRotation == null || playerMovement == null || cameraMovement == null)
+            return;
+
+        playerMovement.InitializePlayerMovement(this, playerRotation, cameraMovement);
         playerRotation.InitializePlayerRotation(this);
+        cameraMovement.InitializeCamera(this, playerMovement);
     }
 
     private void Update()
     {
+        if (!IsOwner)
+            return;
+
         MovementInput();
         playerRotation.ApplyRotation();
+        
+
+        testVelocity = playerRigidbody.velocity;
     }
 
     private void FixedUpdate()
     {
+        if (!IsOwner)
+            return;
+
         playerMovement.ApplyMovement();
+        cameraMovement.PlayerCameraMovement();
     }
 
     private void MovementInput()

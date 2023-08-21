@@ -1,50 +1,57 @@
 using Steamworks;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : NetworkBehaviour
 {
-    private ClientAuthPlayerController _clientController;
-    private PlayerRotation _playerRotation;
+    private ClientAuthPlayerController clientController;
+    private PlayerRotation playerRotation;
+    private CameraMovement camMovement;
 
-    public void InitializePlayerMovement(ClientAuthPlayerController controller, PlayerRotation rotation)
+    public void InitializePlayerMovement(ClientAuthPlayerController controller, PlayerRotation rotation, CameraMovement cam)
     {
-        _clientController = controller;
-        _playerRotation = rotation;
+        clientController = controller;
+        playerRotation = rotation;
+        camMovement = cam;
     }
 
     public void ApplyMovement()
     {
-        float currentMovementSpeed = _clientController.movementSpeed;
-        if (_clientController.IsGrounded())
+        float currentMovementSpeed = clientController._movementSpeed;
+        if (clientController.IsGrounded())
         {
-            if(_clientController._playerInput.y < 0)
-            {
-                currentMovementSpeed /= 2;
-            }
-
-            _clientController.newVelocity.Set(_clientController.playerRigidbody.velocity.x, 0.0f, _clientController._playerInput.y * (currentMovementSpeed * 100) * Time.deltaTime);
-            //_clientController.playerRigidbody.velocity = _clientController.newVelocity;
-            _clientController.playerRigidbody.AddRelativeForce(new Vector3(0, 0, _clientController.newVelocity.z));
+        
+            clientController._newVelocity.Set(clientController.playerRigidbody.velocity.x, 0.0f, clientController._playerInput.y * (currentMovementSpeed * 100) * Time.deltaTime);
+            clientController.playerRigidbody.AddRelativeForce(new Vector3(0, 0, clientController._newVelocity.z));
 
 
         }
-        else if(!_clientController.IsGrounded())
+        else if(!clientController.IsGrounded())
         {
-            _clientController.newVelocity.Set(_clientController.playerRigidbody.velocity.x, _clientController.playerRigidbody.velocity.y, _clientController._playerInput.y * (currentMovementSpeed * 100) * Time.deltaTime);
-            //_clientController.playerRigidbody.velocity = _clientController.newVelocity;
-            _clientController.playerRigidbody.AddRelativeForce(new Vector3(_clientController.newVelocity.x, _clientController.newVelocity.y, _clientController.newVelocity.z));
+            clientController._newVelocity.Set(clientController.playerRigidbody.velocity.x, clientController.playerRigidbody.velocity.y, clientController._playerInput.y * (currentMovementSpeed * 100) * Time.deltaTime);
+            clientController.playerRigidbody.AddRelativeForce(new Vector3(clientController._newVelocity.x, clientController._newVelocity.y, clientController._newVelocity.z));
         }
 
     }
 
     public void ApplyJump()
     {
-        if (_clientController.IsGrounded())
+        if (clientController.IsGrounded())
         {
-            _clientController.newForce.Set(0.0f, _clientController.jumpForce, 0.0f);
-            _clientController.playerRigidbody.AddForce(_clientController.newForce, ForceMode.Impulse);
+            clientController._newForce.Set(0.0f, clientController._jumpForce, 0.0f);
+            clientController.playerRigidbody.AddForce(clientController._newForce, ForceMode.Impulse);
         }
+    }
+
+    public bool IsPlayerMoving()
+    {
+        Rigidbody rb = clientController.playerRigidbody;
+        if(rb.velocity.x != 0 || rb.velocity.y != 0 || rb.velocity.z != 0)
+        {
+            return true;
+        }
+        return false;
     }
 }

@@ -14,8 +14,19 @@ public class PlayerRotation : MonoBehaviour
 
     public void ApplyRotation()
     {
-        gameObject.transform.Rotate(0, (clientController._playerInput.x * clientController.rotationSpeed) * Time.deltaTime, 0);
-        //clientController._playerInput.x
+        if (clientController.playerTransform == null)
+            return;
+
+        clientController.playerTransform.Rotate(0, (clientController._playerInput.x * clientController._rotationSpeed) * Time.deltaTime, 0);
+    }
+
+    public bool IsPlayerOnlyRotating()
+    {
+        if (clientController._playerInput.x != 0 && clientController._playerInput.y == 0)
+        {
+            return true;
+        }
+        return false;
     }
 
 }
