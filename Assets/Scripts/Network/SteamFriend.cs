@@ -21,6 +21,11 @@ public class SteamFriend : MonoBehaviour
         this.steamId = steamID;
     }
 
+    public SteamId GetSteamID()
+    {
+        return steamId;
+    }
+
     public void Invite()
     {
         SteamNetworkManager.Instance.CurrentLobby.Value.InviteFriend(steamId);

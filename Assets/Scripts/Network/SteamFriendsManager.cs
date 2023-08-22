@@ -2,6 +2,7 @@ using Steamworks;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class SteamFriendsManager : MonoBehaviour
 {
@@ -13,6 +14,8 @@ public class SteamFriendsManager : MonoBehaviour
     [SerializeField]
     private GameObject friendContent;
 
+    public static UnityEvent<Friend> JoinedFriendEvent = new UnityEvent<Friend>();
+    public static UnityEvent<Friend> LeftFriendEvent = new UnityEvent<Friend>();
 
     // Start is called before the first frame update
     async void OnEnable()
@@ -22,12 +25,38 @@ public class SteamFriendsManager : MonoBehaviour
             return;
         }
 
-        
+        JoinedFriendEvent.AddListener(AddToLobby);
+        LeftFriendEvent.AddListener(RemoveFromLobby);
+
         GameObject player = Instantiate<GameObject>(steamFriendsPrefab,lobbyContent.transform);
         var img = await SteamFriends.GetLargeAvatarAsync(SteamClient.SteamId);
         player.GetComponent<SteamFriend>().Init(SteamClient.Name,GetTextureFromImage(img.Value),SteamClient.SteamId);
 
         InitFriendsAsync();
+    }
+
+    private void OnDisable()
+    {
+        JoinedFriendEvent.RemoveListener(AddToLobby);
+        LeftFriendEvent.RemoveListener(RemoveFromLobby);
+    }
+
+    private void RemoveFromLobby(Friend friend)
+    {
+        foreach (var steamFriend in lobbyContent.GetComponentsInChildren<SteamFriend>())
+        {
+            if (steamFriend.GetSteamID() == friend.Id)
+            {
+                Destroy(steamFriend.gameObject);
+            }
+        }
+    }
+
+    private async void AddToLobby(Friend friend)
+    {
+        GameObject player = Instantiate<GameObject>(steamFriendsPrefab, lobbyContent.transform);
+        var img = await SteamFriends.GetLargeAvatarAsync(friend.Id);
+        player.GetComponent<SteamFriend>().Init(friend.Name, GetTextureFromImage(img.Value), friend.Id);
     }
 
     public static Texture2D GetTextureFromImage(Steamworks.Data.Image image)
@@ -48,9 +77,14 @@ public class SteamFriendsManager : MonoBehaviour
 
     public async void InitFriendsAsync()
     {
+        for (int i = 0; i < friendContent.transform.childCount; i++)
+        {
+
+        }
+
         foreach (var friend in SteamFriends.GetFriends())
         {
-            if (friend.IsBlocked || friend.IsPlayingThisGame || friend.IsMe)
+            if (friend.IsBlocked || !friend.IsPlayingThisGame || friend.IsMe)
             {
                 continue;
             }

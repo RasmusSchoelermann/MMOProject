@@ -12,6 +12,8 @@ public class SteamNetworkManager : MonoBehaviour
 
     public Lobby? CurrentLobby { get; private set; } = null;
 
+    private SteamId lobbySteamID;
+
     private void Awake()
     {
         if (Instance)
@@ -131,9 +133,21 @@ public class SteamNetworkManager : MonoBehaviour
     #endregion
 
     #region Steam Callbacks
-    private void OnGameLobbyJoinRequested(Lobby lobby, SteamId id)
+    private async void OnGameLobbyJoinRequested(Lobby lobby, SteamId id)
     {
-        StartClient(id);
+        RoomEnter joinedLobbySuccess = await lobby.Join();
+        if (joinedLobbySuccess != RoomEnter.Success)
+        {
+            Debug.Log("failed to join lobby : " + joinedLobbySuccess);
+            return;
+        }
+        else
+        {
+            CurrentLobby = lobby;
+            lobbySteamID = id;
+        }
+
+        
         Debug.Log("Joined friends lobby", this);
     }
 
@@ -150,11 +164,13 @@ public class SteamNetworkManager : MonoBehaviour
     private void OnLobbyMemberLeave(Lobby lobby1, Friend friend)
     {
         Debug.Log("Friend left lobby", this);
+        SteamFriendsManager.LeftFriendEvent.Invoke(friend);
     }
 
     private void OnLobbyMemberJoined(Lobby lobby, Friend friend)
     {
         Debug.Log("Friend joined lobby", this);
+        SteamFriendsManager.JoinedFriendEvent.Invoke(friend);
     }
 
     private void OnLobbyEntered(Lobby lobby)
@@ -163,7 +179,8 @@ public class SteamNetworkManager : MonoBehaviour
         {
             return;
         }
-        StartClient(lobby.Id);
+        StartClient(lobbySteamID);
+        SteamLobbyUIManager.ShowLobby.Invoke();
     }
 
     private void OnLobbyCreated(Result result, Lobby lobby)
