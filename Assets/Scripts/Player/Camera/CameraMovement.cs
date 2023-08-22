@@ -28,6 +28,10 @@ public class CameraMovement : MonoBehaviour
         playerRotation = protation;
     }
 
+    public void ReturnCameraToOrigin()
+    { 
+    }
+
     public void PlayerCameraMovement()
     {
         if (!playerMovement.IsPlayerMoving() && !IsCameraBehindPlayer())
@@ -49,11 +53,14 @@ public class CameraMovement : MonoBehaviour
 
     public void ManualCameraMovement()
     {
-        if (!Input.GetMouseButton(1) && !playerMovement.IsPlayerMovingSidewards())
+        if (!Input.GetMouseButton(1))
         {
             _manualCamMovement = false;
             return;
         }
+
+        if (playerMovement.IsPlayerMovingSidewards())
+            return;
 
         _manualCamMovement = true;
         _cameraRotation.y += -clientController._mouseInput.x;

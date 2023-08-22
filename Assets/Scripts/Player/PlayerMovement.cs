@@ -97,8 +97,7 @@ public class PlayerMovement : NetworkBehaviour
 
     public bool IsPlayerMovingSidewards()
     {
-        Rigidbody rb = clientController.playerRigidbody;
-        if(Input.GetMouseButton(1) && rb.velocity.x != 0)
+        if(Input.GetMouseButton(1) && clientController._movementInput.x != 0)
         {
             return true;
         }
