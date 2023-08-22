@@ -17,12 +17,12 @@ public class PlayerRotation : MonoBehaviour
         if (clientController.playerTransform == null)
             return;
 
-        clientController.playerTransform.Rotate(0, (clientController._playerInput.x * clientController._rotationSpeed) * Time.deltaTime, 0);
+        clientController.playerTransform.Rotate(0, (clientController._movementInput.x * clientController._rotationSpeed) * Time.deltaTime, 0);
     }
 
     public bool IsPlayerOnlyRotating()
     {
-        if (clientController._playerInput.x != 0 && clientController._playerInput.y == 0)
+        if (clientController._movementInput.x != 0 && clientController._movementInput.y == 0)
         {
             return true;
         }

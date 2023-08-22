@@ -9,11 +9,14 @@ public class ClientAuthPlayerController : NetworkBehaviour
     public float _movementSpeed;
     public float _jumpForce;
     public float _rotationSpeed;
+    public float _mouseSensititvity = 3.0f;
 
     public Rigidbody playerRigidbody;
     public CapsuleCollider playerCollider;
 
-    public Vector2 _playerInput;
+    public Vector2 _movementInput;
+    public Vector2 _mouseInput;
+
     public Vector3 _newVelocity;
     public Vector3 _newForce;
 
@@ -25,8 +28,6 @@ public class ClientAuthPlayerController : NetworkBehaviour
     public CameraMovement cameraMovement;
 
     public Camera playerCam;
-
-    public Vector3 testVelocity;
 
     public override void OnNetworkSpawn()
     {
@@ -53,10 +54,11 @@ public class ClientAuthPlayerController : NetworkBehaviour
             return;
 
         MovementInput();
+        MouseInput();
         playerRotation.ApplyRotation();
-        
 
-        testVelocity = playerRigidbody.velocity;
+        cameraMovement.ZoomCamera();
+        cameraMovement.ManualCameraMovement();
     }
 
     private void FixedUpdate()
@@ -70,13 +72,21 @@ public class ClientAuthPlayerController : NetworkBehaviour
 
     private void MovementInput()
     {
-        _playerInput.x = Input.GetAxisRaw("Horizontal");
-        _playerInput.y = Input.GetAxisRaw("Vertical");
+        _movementInput.x = Input.GetAxisRaw("Horizontal");
+        _movementInput.y = Input.GetAxisRaw("Vertical");
 
         if(Input.GetButtonDown("Jump"))
         {
             playerMovement.ApplyJump();
         }
+    }
+
+    private void MouseInput()
+    {
+        _mouseInput.x = Input.GetAxis("Mouse X") * _mouseSensititvity;
+        _mouseInput.y = Input.GetAxis("Mouse Y") * _mouseSensititvity;
+
+
     }
 
     public bool IsGrounded()

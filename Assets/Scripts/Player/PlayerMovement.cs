@@ -23,14 +23,14 @@ public class PlayerMovement : NetworkBehaviour
         if (clientController.IsGrounded())
         {
         
-            clientController._newVelocity.Set(clientController.playerRigidbody.velocity.x, 0.0f, clientController._playerInput.y * (currentMovementSpeed * 100) * Time.deltaTime);
+            clientController._newVelocity.Set(clientController.playerRigidbody.velocity.x, 0.0f, clientController._movementInput.y * (currentMovementSpeed * 100) * Time.deltaTime);
             clientController.playerRigidbody.AddRelativeForce(new Vector3(0, 0, clientController._newVelocity.z));
 
 
         }
         else if(!clientController.IsGrounded())
         {
-            clientController._newVelocity.Set(clientController.playerRigidbody.velocity.x, clientController.playerRigidbody.velocity.y, clientController._playerInput.y * (currentMovementSpeed * 100) * Time.deltaTime);
+            clientController._newVelocity.Set(clientController.playerRigidbody.velocity.x, clientController.playerRigidbody.velocity.y, clientController._movementInput.y * (currentMovementSpeed * 100) * Time.deltaTime);
             clientController.playerRigidbody.AddRelativeForce(new Vector3(clientController._newVelocity.x, clientController._newVelocity.y, clientController._newVelocity.z));
         }
 

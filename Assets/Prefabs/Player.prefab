@@ -242,7 +242,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1000
+  far clip plane: 100
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -281,6 +281,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24a076c2df7b86f46bd50092eb07e60c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _cameraOffset: 5
+  _zoomSpeed: 10
+  _smoothSpeed: 0.125
 --- !u!1 &6261469674629239672
 GameObject:
   m_ObjectHideFlags: 0
@@ -349,9 +352,11 @@ MonoBehaviour:
   _movementSpeed: 10
   _jumpForce: 10
   _rotationSpeed: 200
+  _mouseSensititvity: 10
   playerRigidbody: {fileID: 924346247748752171}
   playerCollider: {fileID: 4485510075333465746}
-  _playerInput: {x: 0, y: 0}
+  _movementInput: {x: 0, y: 0}
+  _mouseInput: {x: 0, y: 0}
   _newVelocity: {x: 0, y: 0, z: 0}
   _newForce: {x: 0, y: 0, z: 0}
   groundLayer:

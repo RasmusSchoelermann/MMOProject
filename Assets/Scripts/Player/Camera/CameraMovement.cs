@@ -7,32 +7,74 @@ public class CameraMovement : MonoBehaviour
     private ClientAuthPlayerController clientController;
     private PlayerMovement playerMovement;
 
-    [SerializeField]
-    private Vector3 zoomOffset;
+    private Vector2 _cameraRotation;
+
 
     [SerializeField]
-    private float smoothSpeed = 0.125f;
+    private float _cameraOffset = 5.0f;
+    [SerializeField]
+    private float _zoomSpeed = 1f;
+
+    [SerializeField]
+    private float _smoothSpeed = 0.125f;
+
+    private bool _manualCamMovement = false;
 
     public void InitializeCamera(ClientAuthPlayerController controller, PlayerMovement pMovement)
     {
         clientController = controller;
         playerMovement = pMovement;
     }
+
     public void PlayerCameraMovement()
     {
-        Vector3 localCameraPosOnPlayer = clientController.playerTransform.TransformPoint(new Vector3(0, 3, -5));
-
         if (!playerMovement.IsPlayerMoving() && !IsCameraBehindPlayer())
             return;
 
         if (clientController.playerRotation.IsPlayerOnlyRotating())
             return;
 
-        Vector3 desiredPosition = localCameraPosOnPlayer + zoomOffset;
-        Vector3 smoothTransition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed);
+        if (_manualCamMovement)
+            return;
+
+        Vector3 localCameraPosOnPlayer = clientController.playerTransform.TransformPoint(new Vector3(0, 3, -_cameraOffset));
+        Vector3 desiredPosition = localCameraPosOnPlayer;
+        Vector3 smoothTransition = Vector3.Lerp(transform.position, desiredPosition, _smoothSpeed);
         transform.position = smoothTransition;
 
         transform.LookAt(clientController.playerTransform);
+    }
+
+    public void ManualCameraMovement()
+    {
+        if (!Input.GetMouseButton(1))
+        {
+            _manualCamMovement = false;
+            return;
+        }
+
+        _manualCamMovement = true;
+        _cameraRotation.y += -clientController._mouseInput.x;
+        _cameraRotation.x += -clientController._mouseInput.y;
+
+        _cameraRotation.x = Mathf.Clamp(_cameraRotation.x, -40, 40);
+
+
+        transform.localEulerAngles = new Vector3(_cameraRotation.x, _cameraRotation.y);
+        transform.position = clientController.playerTransform.position - transform.forward * _cameraOffset;
+
+    }
+
+    public void ZoomCamera()
+    {
+        if(clientController.playerCam.orthographic)
+        {
+            clientController.playerCam.orthographicSize -= Input.GetAxis("Mouse ScrollWheel") * _zoomSpeed;
+        }
+        else
+        {
+            clientController.playerCam.fieldOfView -= Input.GetAxis("Mouse ScrollWheel") * _zoomSpeed;
+        }
     }
 
     public bool IsCameraBehindPlayer()
