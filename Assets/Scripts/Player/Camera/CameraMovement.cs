@@ -6,6 +6,7 @@ public class CameraMovement : MonoBehaviour
 {
     private ClientAuthPlayerController clientController;
     private PlayerMovement playerMovement;
+    private PlayerRotation playerRotation;
 
     private Vector2 _cameraRotation;
 
@@ -20,10 +21,11 @@ public class CameraMovement : MonoBehaviour
 
     private bool _manualCamMovement = false;
 
-    public void InitializeCamera(ClientAuthPlayerController controller, PlayerMovement pMovement)
+    public void InitializeCamera(ClientAuthPlayerController controller, PlayerMovement pMovement, PlayerRotation protation)
     {
         clientController = controller;
         playerMovement = pMovement;
+        playerRotation = protation;
     }
 
     public void PlayerCameraMovement()
@@ -31,7 +33,7 @@ public class CameraMovement : MonoBehaviour
         if (!playerMovement.IsPlayerMoving() && !IsCameraBehindPlayer())
             return;
 
-        if (clientController.playerRotation.IsPlayerOnlyRotating())
+        if (playerRotation.IsPlayerOnlyRotating())
             return;
 
         if (_manualCamMovement)
@@ -47,7 +49,7 @@ public class CameraMovement : MonoBehaviour
 
     public void ManualCameraMovement()
     {
-        if (!Input.GetMouseButton(1))
+        if (!Input.GetMouseButton(1) && !playerMovement.IsPlayerMovingSidewards())
         {
             _manualCamMovement = false;
             return;

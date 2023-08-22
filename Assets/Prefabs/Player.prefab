@@ -349,16 +349,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27bf198a37be24d4e9e472ddd703cf5c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _movementSpeed: 10
-  _jumpForce: 10
-  _rotationSpeed: 200
-  _mouseSensititvity: 10
+  movementSpeed: 10
+  jumpForce: 10
+  rotationSpeed: 3
+  mouseSensitivity: 3
+  playerBody: {fileID: 0}
   playerRigidbody: {fileID: 924346247748752171}
   playerCollider: {fileID: 4485510075333465746}
   _movementInput: {x: 0, y: 0}
+  _rotationInput: 0
   _mouseInput: {x: 0, y: 0}
-  _newVelocity: {x: 0, y: 0, z: 0}
-  _newForce: {x: 0, y: 0, z: 0}
   groundLayer:
     serializedVersion: 2
     m_Bits: 128

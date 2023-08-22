@@ -3,31 +3,79 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
 using Steamworks;
+using System;
 
 public class ClientAuthPlayerController : NetworkBehaviour
 {
-    public float _movementSpeed;
-    public float _jumpForce;
-    public float _rotationSpeed;
-    public float _mouseSensititvity = 3.0f;
+    [SerializeField]
+    private float movementSpeed;
+    [SerializeField]
+    private float jumpForce;
+    [SerializeField]
+    private float rotationSpeed;
+    [SerializeField]
+    private float mouseSensitivity = 3.0f;
+
+    public float MovementSpeed
+    {
+        get { return movementSpeed; }
+        set
+        {
+            if (value > 30)
+                throw new ArgumentException("Movementspeed Cap exceeded");
+            movementSpeed = value;
+        }
+    }
+
+    public float JumpForce
+    {
+        get { return jumpForce; }
+        set { if (value > 10)
+                throw new ArgumentException("Jump force cap exceeded");
+            jumpForce = value;
+        }
+    }
+
+    public float RotationSpeed
+    {
+        get { return  rotationSpeed; }
+        set { if (value > 200)
+                throw new ArgumentException("Rotation Speed cap exceeded");
+        rotationSpeed = value;
+        }
+    }
+
+    private float MouseSensitivity
+    {
+        get { return mouseSensitivity; }
+        set { mouseSensitivity = value; }
+    }
+
+    [SerializeField]
+    private Transform playerBody;
 
     public Rigidbody playerRigidbody;
     public CapsuleCollider playerCollider;
 
     public Vector2 _movementInput;
+    public float _rotationInput;
     public Vector2 _mouseInput;
 
-    public Vector3 _newVelocity;
-    public Vector3 _newForce;
-
-    public LayerMask groundLayer;
+    [SerializeField]
+    private LayerMask groundLayer;
 
     public Transform playerTransform;
-    public PlayerMovement playerMovement;
-    public PlayerRotation playerRotation;
-    public CameraMovement cameraMovement;
+
+    [SerializeField]
+    private PlayerMovement playerMovement;
+    [SerializeField]
+    private PlayerRotation playerRotation;
+    [SerializeField]
+    private CameraMovement cameraMovement;
 
     public Camera playerCam;
+
+    public Vector3 testVelocity;
 
     public override void OnNetworkSpawn()
     {
@@ -45,13 +93,20 @@ public class ClientAuthPlayerController : NetworkBehaviour
 
         playerMovement.InitializePlayerMovement(this, playerRotation, cameraMovement);
         playerRotation.InitializePlayerRotation(this);
-        cameraMovement.InitializeCamera(this, playerMovement);
+        cameraMovement.InitializeCamera(this, playerMovement, playerRotation);
     }
 
     private void Update()
     {
         if (!IsOwner)
             return;
+
+        if(Input.GetKey(KeyCode.R))
+        {
+            playerRotation.RotatePlayerInCameraDirection();
+        }
+
+        testVelocity = playerRigidbody.velocity;
 
         MovementInput();
         MouseInput();
@@ -72,8 +127,9 @@ public class ClientAuthPlayerController : NetworkBehaviour
 
     private void MovementInput()
     {
-        _movementInput.x = Input.GetAxisRaw("Horizontal");
-        _movementInput.y = Input.GetAxisRaw("Vertical");
+        _movementInput.x = Input.GetAxisRaw("Sidewards");
+        _movementInput.y = Input.GetAxisRaw("Forwards");
+        _rotationInput = Input.GetAxisRaw("Rotation");
 
         if(Input.GetButtonDown("Jump"))
         {
@@ -83,8 +139,8 @@ public class ClientAuthPlayerController : NetworkBehaviour
 
     private void MouseInput()
     {
-        _mouseInput.x = Input.GetAxis("Mouse X") * _mouseSensititvity;
-        _mouseInput.y = Input.GetAxis("Mouse Y") * _mouseSensititvity;
+        _mouseInput.x = Input.GetAxis("Mouse X") * MouseSensitivity;
+        _mouseInput.y = Input.GetAxis("Mouse Y") * MouseSensitivity;
 
 
     }
