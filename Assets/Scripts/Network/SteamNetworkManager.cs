@@ -6,7 +6,7 @@ using Unity.Netcode;
 
 public class SteamNetworkManager : MonoBehaviour
 {
-    public SteamNetworkManager Instance;
+    public static SteamNetworkManager Instance;
 
     private FacepunchTransport transport = null;
 
@@ -108,18 +108,20 @@ public class SteamNetworkManager : MonoBehaviour
     #region Network Callbacks
     private void OnServerStarted()
     {
-       
+        Debug.Log("Server started", this);
     }
 
     private void OnClientDisconnectCallback(ulong clientid)
     {
         NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnectedCallback;
         NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnectCallback;
+        Debug.Log("Client disconnected", this);
+
     }
 
     private void OnClientConnectedCallback(ulong clientid)
     {
-        
+        Debug.Log("Client connected", this);
     }
     #endregion
 
@@ -127,26 +129,27 @@ public class SteamNetworkManager : MonoBehaviour
     private void OnGameLobbyJoinRequested(Lobby lobby, SteamId id)
     {
         StartClient(lobby.Id);
+        Debug.Log("Joined friends lobby", this);
     }
 
     private void OnLobbyGameCreated(Lobby lobby, uint ip, ushort port, SteamId id)
     {
-        
+        Debug.Log("Lobby created", this);
     }
 
     private void OnLobbyInvite(Friend friend, Lobby lobby)
     {
-       
+        Debug.Log("Got an invite", this);
     }
 
     private void OnLobbyMemberLeave(Lobby lobby1, Friend friend)
     {
-       
+        Debug.Log("Friend left lobby", this);
     }
 
     private void OnLobbyMemberJoined(Lobby lobby, Friend friend)
     {
-       
+        Debug.Log("Friedn joined lobby", this);
     }
 
     private void OnLobbyEntered(Lobby lobby)

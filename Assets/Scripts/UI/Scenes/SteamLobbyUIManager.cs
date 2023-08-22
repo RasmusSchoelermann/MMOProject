@@ -10,6 +10,8 @@ public class SteamLobbyUIManager : MonoBehaviour
     private GameObject ClientPanel;
     [SerializeField]
     private GameObject MainPanel;
+    [SerializeField]
+    private GameObject LobbyPanel;
 
     public void ShowServer()
     {
@@ -27,6 +29,14 @@ public class SteamLobbyUIManager : MonoBehaviour
         MainPanel.SetActive(true);
         ClientPanel.SetActive(false);
         ServerPanel.SetActive(false);
+    }
+
+    public void ShowLobbyPanel()
+    {
+        MainPanel.SetActive(false);
+        ClientPanel.SetActive(false);
+        ServerPanel.SetActive(false);
+        LobbyPanel.SetActive(true);
     }
 
 }
