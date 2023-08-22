@@ -14,7 +14,10 @@ public class SteamFriend : MonoBehaviour
     public void Init(string name,Texture2D pic,SteamId steamID)
     {
         text.text = name;
-        rawImage.texture = pic;
+        if (pic != null)
+        {
+            rawImage.texture = pic;
+        }
         this.steamId = steamID;
     }
 

@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.Events;
 public class SteamLobbyUIManager : MonoBehaviour
 {
     [SerializeField]
@@ -12,6 +12,18 @@ public class SteamLobbyUIManager : MonoBehaviour
     private GameObject MainPanel;
     [SerializeField]
     private GameObject LobbyPanel;
+
+    public static UnityEvent ShowLobby = new UnityEvent();
+
+    private void OnEnable()
+    {
+        ShowLobby.AddListener(ShowLobbyPanel);
+    }
+
+    private void OnDisable()
+    {
+        ShowLobby.RemoveListener(ShowLobbyPanel);
+    }
 
     public void ShowServer()
     {

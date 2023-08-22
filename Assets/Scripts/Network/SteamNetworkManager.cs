@@ -77,7 +77,8 @@ public class SteamNetworkManager : MonoBehaviour
 
     public async void StartHost(int maxMembers = 100)
     {
-        
+        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnectedCallback;
+        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnectCallback;
         NetworkManager.Singleton.OnServerStarted += OnServerStarted;
 
         if (NetworkManager.Singleton.StartHost())
@@ -102,8 +103,11 @@ public class SteamNetworkManager : MonoBehaviour
 
     private void OnApplicationQuit() => Disconnect();
 
-   
-   
+
+    public void JoinSelf()
+    {
+        StartClient(SteamClient.SteamId);
+    }
 
     #region Network Callbacks
     private void OnServerStarted()
@@ -115,7 +119,8 @@ public class SteamNetworkManager : MonoBehaviour
     {
         NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnectedCallback;
         NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnectCallback;
-        Debug.Log("Client disconnected", this);
+        
+        Debug.Log("Client disconnected: " + NetworkManager.Singleton.DisconnectReason, this);
 
     }
 
@@ -128,7 +133,7 @@ public class SteamNetworkManager : MonoBehaviour
     #region Steam Callbacks
     private void OnGameLobbyJoinRequested(Lobby lobby, SteamId id)
     {
-        StartClient(lobby.Id);
+        StartClient(id);
         Debug.Log("Joined friends lobby", this);
     }
 
@@ -149,7 +154,7 @@ public class SteamNetworkManager : MonoBehaviour
 
     private void OnLobbyMemberJoined(Lobby lobby, Friend friend)
     {
-        Debug.Log("Friedn joined lobby", this);
+        Debug.Log("Friend joined lobby", this);
     }
 
     private void OnLobbyEntered(Lobby lobby)

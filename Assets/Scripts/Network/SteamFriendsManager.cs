@@ -15,13 +15,14 @@ public class SteamFriendsManager : MonoBehaviour
 
 
     // Start is called before the first frame update
-    async void Start()
+    async void OnEnable()
     {
         if (!SteamClient.IsValid)
         {
             return;
         }
 
+        
         GameObject player = Instantiate<GameObject>(steamFriendsPrefab,lobbyContent.transform);
         var img = await SteamFriends.GetLargeAvatarAsync(SteamClient.SteamId);
         player.GetComponent<SteamFriend>().Init(SteamClient.Name,GetTextureFromImage(img.Value),SteamClient.SteamId);
@@ -49,13 +50,22 @@ public class SteamFriendsManager : MonoBehaviour
     {
         foreach (var friend in SteamFriends.GetFriends())
         {
-            if (friend.IsBlocked || !friend.IsPlayingThisGame || friend.IsMe)
+            if (friend.IsBlocked || friend.IsPlayingThisGame || friend.IsMe)
             {
                 continue;
             }
             GameObject f = Instantiate(steamFriendsPrefab, friendContent.transform);
             var img = await SteamFriends.GetLargeAvatarAsync(friend.Id);
-            f.GetComponent<SteamFriend>().Init(friend.Name, GetTextureFromImage(img.Value), friend.Id);
+            if (img.HasValue)
+            {
+                f.GetComponent<SteamFriend>().Init(friend.Name, GetTextureFromImage(img.Value), friend.Id);
+            }
+            else
+            {
+                f.GetComponent<SteamFriend>().Init(friend.Name, null, friend.Id);
+            }
+
+            
         }
     }
 
