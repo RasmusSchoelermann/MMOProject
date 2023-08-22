@@ -149,6 +149,7 @@ public class SteamNetworkManager : MonoBehaviour
 
         
         Debug.Log("Joined friends lobby", this);
+        SteamFriendsManager.UpdateLobbyListEvent.Invoke(lobby.Members);
     }
 
     private void OnLobbyGameCreated(Lobby lobby, uint ip, ushort port, SteamId id)
@@ -181,6 +182,7 @@ public class SteamNetworkManager : MonoBehaviour
         }
         StartClient(lobbySteamID);
         SteamLobbyUIManager.ShowLobby.Invoke();
+        Debug.Log("Entered lobby ans start client", this);
     }
 
     private void OnLobbyCreated(Result result, Lobby lobby)

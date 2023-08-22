@@ -16,6 +16,7 @@ public class SteamFriendsManager : MonoBehaviour
 
     public static UnityEvent<Friend> JoinedFriendEvent = new UnityEvent<Friend>();
     public static UnityEvent<Friend> LeftFriendEvent = new UnityEvent<Friend>();
+    public static UnityEvent<IEnumerable<Friend>> UpdateLobbyListEvent = new UnityEvent<IEnumerable<Friend>>();
 
     // Start is called before the first frame update
     async void OnEnable()
@@ -27,6 +28,7 @@ public class SteamFriendsManager : MonoBehaviour
 
         JoinedFriendEvent.AddListener(AddToLobby);
         LeftFriendEvent.AddListener(RemoveFromLobby);
+        UpdateLobbyListEvent.AddListener(UpdateLobbyList);
 
         GameObject player = Instantiate<GameObject>(steamFriendsPrefab,lobbyContent.transform);
         var img = await SteamFriends.GetLargeAvatarAsync(SteamClient.SteamId);
@@ -39,6 +41,29 @@ public class SteamFriendsManager : MonoBehaviour
     {
         JoinedFriendEvent.RemoveListener(AddToLobby);
         LeftFriendEvent.RemoveListener(RemoveFromLobby);
+        UpdateLobbyListEvent.RemoveListener(UpdateLobbyList);
+    }
+
+    private async void UpdateLobbyList(IEnumerable<Friend> lobbyMembers)
+    {
+        foreach (Transform child in lobbyContent.transform)
+        {
+            Destroy(child);
+        }
+
+        foreach (var steamFriend in lobbyMembers)
+        {
+            GameObject f = Instantiate(steamFriendsPrefab, friendContent.transform);
+            var img = await SteamFriends.GetLargeAvatarAsync(steamFriend.Id);
+            if (img.HasValue)
+            {
+                f.GetComponent<SteamFriend>().Init(steamFriend.Name, GetTextureFromImage(img.Value), steamFriend.Id);
+            }
+            else
+            {
+                f.GetComponent<SteamFriend>().Init(steamFriend.Name, null, steamFriend.Id);
+            }
+        }
     }
 
     private void RemoveFromLobby(Friend friend)
@@ -56,7 +81,15 @@ public class SteamFriendsManager : MonoBehaviour
     {
         GameObject player = Instantiate<GameObject>(steamFriendsPrefab, lobbyContent.transform);
         var img = await SteamFriends.GetLargeAvatarAsync(friend.Id);
-        player.GetComponent<SteamFriend>().Init(friend.Name, GetTextureFromImage(img.Value), friend.Id);
+        if (img.HasValue)
+        {
+            player.GetComponent<SteamFriend>().Init(friend.Name, GetTextureFromImage(img.Value), friend.Id);
+        }
+        else
+        {
+            player.GetComponent<SteamFriend>().Init(friend.Name, null, friend.Id);
+        }
+       
     }
 
     public static Texture2D GetTextureFromImage(Steamworks.Data.Image image)
