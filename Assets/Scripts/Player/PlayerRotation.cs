@@ -28,7 +28,7 @@ public class PlayerRotation : MonoBehaviour
         if (clientController.playerTransform.rotation.y == degrees)
             return;
 
-        Quaternion targetRotation = Quaternion.Euler(0, degrees, 0);
+        Quaternion targetRotation = Quaternion.Euler(0, clientController.playerRigidbody.rotation.y + degrees, 0);
 
         clientController.playerRigidbody.rotation = targetRotation;
     }

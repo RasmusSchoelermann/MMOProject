@@ -8,17 +8,20 @@ public class CameraMovement : MonoBehaviour
     private PlayerMovement playerMovement;
     private PlayerRotation playerRotation;
 
-    private Vector2 _cameraRotation;
+    private Vector2 _cameraRotation = new Vector2(31, 0);
+    [SerializeField]
+    private Vector3 _cameraOriginPosition;
 
 
     [SerializeField]
-    private float _cameraOffset = 5.0f;
+    private float _cameraOffset = 10.0f;
     [SerializeField]
     private float _zoomSpeed = 1f;
 
     [SerializeField]
     private float _smoothSpeed = 0.125f;
 
+    [SerializeField]
     private bool _manualCamMovement = false;
 
     public void InitializeCamera(ClientAuthPlayerController controller, PlayerMovement pMovement, PlayerRotation protation)
@@ -29,12 +32,18 @@ public class CameraMovement : MonoBehaviour
     }
 
     public void ReturnCameraToOrigin()
-    { 
+    {
+        Vector3 localCameraPosOnPlayer = clientController.playerTransform.TransformPoint(_cameraOriginPosition);
+        Vector3 desiredPosition = localCameraPosOnPlayer - transform.forward * _cameraOffset;
+        Vector3 smoothTransition = Vector3.Lerp(transform.position, desiredPosition, _smoothSpeed);
+
+        transform.position = smoothTransition;
+        transform.LookAt(clientController.playerTransform);
     }
 
     public void PlayerCameraMovement()
     {
-        if (!playerMovement.IsPlayerMoving() && !IsCameraBehindPlayer())
+        if (!playerMovement.IsPlayerMoving())
             return;
 
         if (playerRotation.IsPlayerOnlyRotating())
@@ -43,11 +52,18 @@ public class CameraMovement : MonoBehaviour
         if (_manualCamMovement)
             return;
 
-        Vector3 localCameraPosOnPlayer = clientController.playerTransform.TransformPoint(new Vector3(0, 3, -_cameraOffset));
+        /*Vector3 localCameraPosOnPlayer = clientController.playerTransform.TransformPoint(_cameraOriginPosition);
         Vector3 desiredPosition = localCameraPosOnPlayer;
         Vector3 smoothTransition = Vector3.Lerp(transform.position, desiredPosition, _smoothSpeed);
         transform.position = smoothTransition;
 
+        transform.LookAt(clientController.playerTransform);*/
+
+        Vector3 localCameraPosOnPlayer = clientController.playerTransform.TransformPoint(_cameraOriginPosition);
+        Vector3 desiredPosition = localCameraPosOnPlayer - transform.forward * _cameraOffset;
+        Vector3 smoothTransition = Vector3.Lerp(transform.position, desiredPosition, _smoothSpeed);
+
+        transform.position = smoothTransition;
         transform.LookAt(clientController.playerTransform);
     }
 
@@ -56,6 +72,8 @@ public class CameraMovement : MonoBehaviour
         if (!Input.GetMouseButton(1))
         {
             _manualCamMovement = false;
+            _cameraRotation.x = 31;
+            _cameraRotation.y = 0;
             return;
         }
 
@@ -70,7 +88,9 @@ public class CameraMovement : MonoBehaviour
 
 
         transform.localEulerAngles = new Vector3(_cameraRotation.x, _cameraRotation.y);
-        transform.position = clientController.playerTransform.position - transform.forward * _cameraOffset;
+
+        Vector3 startPos = new Vector3 (clientController.playerTransform.position.x, clientController.playerTransform.position.y + _cameraOriginPosition.y, clientController.playerTransform.position.z);
+        transform.position = startPos - transform.forward * _cameraOffset;
 
     }
 
@@ -88,7 +108,7 @@ public class CameraMovement : MonoBehaviour
 
     public bool IsCameraBehindPlayer()
     {
-        if(transform.position == clientController.playerTransform.TransformPoint(new Vector3(0, 3, -5)))
+        if(transform.position == clientController.playerTransform.TransformPoint(_cameraOriginPosition))
         {
             return true;
         }

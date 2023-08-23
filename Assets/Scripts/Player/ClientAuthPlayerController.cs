@@ -139,8 +139,11 @@ public class ClientAuthPlayerController : NetworkBehaviour
 
     private void MouseInput()
     {
-        _mouseInput.x = Input.GetAxis("Mouse X") * MouseSensitivity;
-        _mouseInput.y = Input.GetAxis("Mouse Y") * MouseSensitivity;
+        if (Input.GetMouseButton(1))
+        {
+            _mouseInput.x = Input.GetAxis("Mouse X") * MouseSensitivity;
+            _mouseInput.y = Input.GetAxis("Mouse Y") * MouseSensitivity;
+        }
 
 
     }
