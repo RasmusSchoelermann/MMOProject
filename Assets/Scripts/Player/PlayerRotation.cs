@@ -12,7 +12,21 @@ public class PlayerRotation : MonoBehaviour
         clientController = controller;
     }
 
+    public void CheckRotationInput()
+    {
+        ApplyRotation();
+    }
+
     public void ApplyRotation()
+    {
+        Vector3 inputDirection = clientController.orientation.forward * clientController.movementInput.y + clientController.orientation.right * clientController.rotationInput;
+        if(inputDirection != Vector3.zero)
+        {
+            clientController.playerObject.forward = Vector3.Slerp(clientController.playerObject.forward, inputDirection.normalized, Time.deltaTime * clientController.RotationSpeed);
+        }
+    }
+
+    /*public void ApplyRotation()
     {
         if (clientController.playerTransform == null)
             return;
@@ -56,5 +70,5 @@ public class PlayerRotation : MonoBehaviour
         }
         return false;
     }
-
+    */
 }

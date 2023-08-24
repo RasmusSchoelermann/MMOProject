@@ -13,6 +13,8 @@ public class PlayerMovement : NetworkBehaviour
     private Vector3 _newVelocity;
     private Vector3 _newJumpForce;
 
+    private float _currentMovementSpeed;
+
     public void InitializePlayerMovement(ClientAuthPlayerController controller, PlayerRotation rotation, CameraMovement cam)
     {
         clientController = controller;
@@ -20,9 +22,23 @@ public class PlayerMovement : NetworkBehaviour
         camMovement = cam;
     }
 
-    public void ApplyMovement()
+    public void CheckPlayerMovement()
     {
-        float currentMovementSpeed = clientController.MovementSpeed;
+        _currentMovementSpeed = clientController.MovementSpeed;
+        if(!clientController.IsGrounded())
+        {
+            FallingControls();
+            return;
+        }
+        ApplyMovement();
+
+    }
+
+    private void ApplyMovement()
+    {
+
+
+        /*float currentMovementSpeed = clientController.MovementSpeed;
         if (clientController.IsGrounded())
         {
             float xVelocity = (clientController._movementInput.x * (currentMovementSpeed * 100) * Time.deltaTime);
@@ -44,13 +60,13 @@ public class PlayerMovement : NetworkBehaviour
         {
             _newVelocity.Set(clientController._movementInput.x * (currentMovementSpeed * 100) * Time.deltaTime, clientController.playerRigidbody.velocity.y, clientController._movementInput.y * (currentMovementSpeed * 100) * Time.deltaTime);
             clientController.playerRigidbody.AddRelativeForce(new Vector3(_newVelocity.x, _newVelocity.y, _newVelocity.z));
-        }
+        }*/
 
     }
 
     private void ApplySidewardsMovement(float xVelocity, float zVelocity)
     {
-        _newVelocity.Set(xVelocity, 0.0f, zVelocity);
+        /*_newVelocity.Set(xVelocity, 0.0f, zVelocity);
 
         if (zVelocity == 0)
         {
@@ -73,7 +89,13 @@ public class PlayerMovement : NetworkBehaviour
             {
                 playerRotation.RotatePlayerBy(45);
             }
-        }
+        }*/
+    }
+
+    private void FallingControls()
+    {
+        _newVelocity.Set(clientController.movementInput.x * _currentMovementSpeed, clientController.playerRigidbody.velocity.y, clientController.movementInput.y * _currentMovementSpeed);
+        clientController.playerRigidbody.AddRelativeForce(new Vector3(_newVelocity.x, _newVelocity.y, _newVelocity.z));
     }
 
     public void ApplyJump()
@@ -97,7 +119,7 @@ public class PlayerMovement : NetworkBehaviour
 
     public bool IsPlayerMovingSidewards()
     {
-        if(Input.GetMouseButton(1) && clientController._movementInput.x != 0)
+        if(Input.GetMouseButton(1) && clientController.movementInput.x != 0)
         {
             return true;
         }
