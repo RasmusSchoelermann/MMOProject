@@ -4,6 +4,7 @@ using UnityEngine;
 using Unity.Netcode;
 using Steamworks;
 using System;
+using Cinemachine;
 
 public class ClientAuthPlayerController : NetworkBehaviour
 {
@@ -23,9 +24,11 @@ public class ClientAuthPlayerController : NetworkBehaviour
     public Transform orientation;
 
     public Camera playerCam;
+    public CinemachineFreeLook cinemachineCameraSettings;
 
     public Vector2 movementInput;
     public Vector2 mouseInput = Vector2.zero;
+    public Vector2 mousePosition = Vector2.zero;
     public float rotationInput;
 
     [SerializeField]
@@ -37,7 +40,8 @@ public class ClientAuthPlayerController : NetworkBehaviour
     [SerializeField]
     private float mouseSensitivity = 3.0f;
 
-    private bool mouse0;
+    public bool mouse0;
+    public bool mouse1;
 
     public float MovementSpeed
     {
@@ -78,12 +82,6 @@ public class ClientAuthPlayerController : NetworkBehaviour
         set { mouseSensitivity = value; }
     }
 
-    public bool Mouse0
-    {
-        get { return mouse0; }
-        set { mouse0 = value; }
-    }
-
     [SerializeField]
     private LayerMask groundLayer;
     
@@ -121,12 +119,15 @@ public class ClientAuthPlayerController : NetworkBehaviour
 
         inputManager.Movement.Jump.performed += ctx => playerMovement.ApplyJump();
 
-        inputManager.MouseInput.Mouse0.performed += ctx => Mouse0 = true;
-        inputManager.MouseInput.Mouse0.canceled += ctx => Mouse0 = false;
+        inputManager.MouseInput.Mouse0.performed += ctx => LeftMouseAction();
+        inputManager.MouseInput.Mouse0.canceled += ctx => mouse0 = false;
+
+        inputManager.MouseInput.Mouse1.started += ctx => RightMouseAction();
+        inputManager.MouseInput.Mouse1.canceled += ctx => mouse1 = false;
 
         inputManager.MouseInput.MouseDelta.performed += ctx => MouseInput(ctx.ReadValue<Vector2>());
         //inputManager.MouseInput.MouseDelta.canceled += ctx => MouseInput(mouseInput = new Vector2(0, 0));
-
+        inputManager.MouseInput.MousePosition.performed += ctx => MousePosition(ctx.ReadValue<Vector2>());
     }
 
     private void OnEnable()
@@ -141,7 +142,9 @@ public class ClientAuthPlayerController : NetworkBehaviour
 
     private void Update()
     {
-        CharacterViewDirection();
+        if (!IsOwner)
+            return;
+        cameraMovement.ApplyCameraRotation();
         //MouseInput();
     }
 
@@ -151,17 +154,29 @@ public class ClientAuthPlayerController : NetworkBehaviour
             return;
 
         playerMovement.CheckPlayerMovement();
-        playerRotation.ApplyRotation();
+        playerRotation.CheckRotationInput();
 
-        cameraMovement.UpdateCamera();
-        //cameraMovement.FocusCamOnPlayer(player);
+        cameraMovement.CharacterViewDirection();
     }
 
-    private void CharacterViewDirection()
+    private void LeftMouseAction()
     {
-        Vector3 viewDirection = player.position - new Vector3(transform.position.x, player.position.y, transform.position.z);
-        if(viewDirection != Vector3.zero)
-            orientation.forward = viewDirection.normalized;
+        mouse0 = true;
+
+        if(rotationInput != 0)
+        {
+            playerMovement.ApplySidewardsMovementAD();
+        }
+    }
+
+    private void RightMouseAction()
+    {
+        mouse1 = true;
+
+        if (mouse0)
+        {
+            playerMovement.ApplyForwardsMovementWithMouse();
+        }
     }
 
     private void StandardMovement(Vector2 moveInput)
@@ -176,165 +191,50 @@ public class ClientAuthPlayerController : NetworkBehaviour
 
     private void MouseInput(Vector2 mInput)
     {
-        mInput.Normalize();
-        //mInput.x = -mInput.x;
-        //mInput.y = -mInput.y;
         mouseInput = mInput;
-        Debug.Log("x: " + mInput.x + " y: " + mInput.y);
-        //mouseInput.x = mInput.y;
-        //mouseInput.y = mInput.x;
+    }
+
+    private void MousePosition(Vector2 mPos)
+    {
+        mPos.Normalize();
+        mousePosition = mPos;
+    }
+
+    public void SetCameraDamping(float value)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            CinemachineOrbitalTransposer transposer = cinemachineCameraSettings.GetRig(i).GetCinemachineComponent<CinemachineOrbitalTransposer>();
+            transposer.m_XDamping = value;
+        }
+    }
+
+    public bool Mouse0And1Pressed()
+    {
+        if(mouse0 && mouse1)
+            return true;
+
+        return false;
+    }
+
+    public bool Mouse0Pressed()
+    {
+        if (mouse0 && !mouse1)
+            return true;
+
+        return false;
+    }
+
+    public bool Mouse1Pressed()
+    {
+        if(!mouse0 && mouse1)
+            return true;
+
+        return false;
     }
 
     public bool IsGrounded()
     {
         return Physics.CheckCapsule(playerCollider.bounds.center, new Vector3(playerCollider.bounds.center.x, playerCollider.bounds.min.y + 0.47f, playerCollider.bounds.center.z), playerCollider.radius, groundLayer);
     }
-
-
-
-    /*[SerializeField]
-    private float movementSpeed;
-    [SerializeField]
-    private float jumpForce;
-    [SerializeField]
-    private float rotationSpeed;
-    [SerializeField]
-    private float mouseSensitivity = 3.0f;
-
-    public float MovementSpeed
-    {
-        get { return movementSpeed; }
-        set
-        {
-            if (value > 30)
-                throw new ArgumentException("Movementspeed Cap exceeded");
-            movementSpeed = value;
-        }
-    }
-
-    public float JumpForce
-    {
-        get { return jumpForce; }
-        set { if (value > 10)
-                throw new ArgumentException("Jump force cap exceeded");
-            jumpForce = value;
-        }
-    }
-
-    public float RotationSpeed
-    {
-        get { return  rotationSpeed; }
-        set { if (value > 200)
-                throw new ArgumentException("Rotation Speed cap exceeded");
-        rotationSpeed = value;
-        }
-    }
-
-    private float MouseSensitivity
-    {
-        get { return mouseSensitivity; }
-        set { mouseSensitivity = value; }
-    }
-
-    [SerializeField]
-    private Transform playerBody;
-
-    public Rigidbody playerRigidbody;
-    public CapsuleCollider playerCollider;
-
-    public Vector2 _movementInput;
-    public float _rotationInput;
-    public Vector2 _mouseInput;
-
-    [SerializeField]
-    private LayerMask groundLayer;
-
-    public Transform playerTransform;
-
-    [SerializeField]
-    private PlayerMovement playerMovement;
-    [SerializeField]
-    private PlayerRotation playerRotation;
-    [SerializeField]
-    private CameraMovement cameraMovement;
-
-    public Camera playerCam;
-
-    public Vector3 testVelocity;
-
-    public override void OnNetworkSpawn()
-    {
-        base.OnNetworkSpawn();
-        InitializePlayer();
-    }
-
-    private void InitializePlayer()
-    {
-        if (!IsOwner)
-            return;
-
-        if (playerRotation == null || playerMovement == null || cameraMovement == null)
-            return;
-
-        playerMovement.InitializePlayerMovement(this, playerRotation, cameraMovement);
-        playerRotation.InitializePlayerRotation(this);
-        cameraMovement.InitializeCamera(this, playerMovement, playerRotation);
-    }
-
-    private void Update()
-    {
-        if (!IsOwner)
-            return;
-
-        if(Input.GetKey(KeyCode.R))
-        {
-            playerRotation.RotatePlayerInCameraDirection();
-        }
-
-        testVelocity = playerRigidbody.velocity;
-
-        MovementInput();
-        MouseInput();
-        playerRotation.ApplyRotation();
-
-        cameraMovement.ZoomCamera();
-        cameraMovement.ManualCameraMovement();
-    }
-
-    private void FixedUpdate()
-    {
-        if (!IsOwner)
-            return;
-
-        playerMovement.ApplyMovement();
-        cameraMovement.PlayerCameraMovement();
-    }
-
-    private void MovementInput()
-    {
-        _movementInput.x = Input.GetAxisRaw("Sidewards");
-        _movementInput.y = Input.GetAxisRaw("Forwards");
-        _rotationInput = Input.GetAxisRaw("Rotation");
-
-        if(Input.GetButtonDown("Jump"))
-        {
-            playerMovement.ApplyJump();
-        }
-    }
-
-    private void MouseInput()
-    {
-        if (Input.GetMouseButton(1))
-        {
-            _mouseInput.x = Input.GetAxis("Mouse X") * MouseSensitivity;
-            _mouseInput.y = Input.GetAxis("Mouse Y") * MouseSensitivity;
-        }
-
-
-    }
-
-    public bool IsGrounded()
-    {
-        return Physics.CheckCapsule(playerCollider.bounds.center, new Vector3(playerCollider.bounds.center.x, playerCollider.bounds.min.y + 0.47f, playerCollider.bounds.center.z), playerCollider.radius, groundLayer);
-    }*/
 }

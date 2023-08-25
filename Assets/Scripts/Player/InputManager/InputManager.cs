@@ -236,6 +236,15 @@ public partial class @InputManager : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""MousePosition"",
+                    ""type"": ""Value"",
+                    ""id"": ""a2f71679-0f66-4457-b717-7189ae7a61d0"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -304,6 +313,17 @@ public partial class @InputManager : IInputActionCollection2, IDisposable
                     ""action"": ""Mouse1"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""785b40da-b0a6-4214-b21d-8678ca400e64"",
+                    ""path"": ""<Mouse>/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""MousePosition"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -351,6 +371,7 @@ public partial class @InputManager : IInputActionCollection2, IDisposable
         m_MouseInput_MouseDelta = m_MouseInput.FindAction("MouseDelta", throwIfNotFound: true);
         m_MouseInput_Mouse0 = m_MouseInput.FindAction("Mouse0", throwIfNotFound: true);
         m_MouseInput_Mouse1 = m_MouseInput.FindAction("Mouse1", throwIfNotFound: true);
+        m_MouseInput_MousePosition = m_MouseInput.FindAction("MousePosition", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Newaction = m_UI.FindAction("New action", throwIfNotFound: true);
@@ -482,6 +503,7 @@ public partial class @InputManager : IInputActionCollection2, IDisposable
     private readonly InputAction m_MouseInput_MouseDelta;
     private readonly InputAction m_MouseInput_Mouse0;
     private readonly InputAction m_MouseInput_Mouse1;
+    private readonly InputAction m_MouseInput_MousePosition;
     public struct MouseInputActions
     {
         private @InputManager m_Wrapper;
@@ -490,6 +512,7 @@ public partial class @InputManager : IInputActionCollection2, IDisposable
         public InputAction @MouseDelta => m_Wrapper.m_MouseInput_MouseDelta;
         public InputAction @Mouse0 => m_Wrapper.m_MouseInput_Mouse0;
         public InputAction @Mouse1 => m_Wrapper.m_MouseInput_Mouse1;
+        public InputAction @MousePosition => m_Wrapper.m_MouseInput_MousePosition;
         public InputActionMap Get() { return m_Wrapper.m_MouseInput; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -511,6 +534,9 @@ public partial class @InputManager : IInputActionCollection2, IDisposable
                 @Mouse1.started -= m_Wrapper.m_MouseInputActionsCallbackInterface.OnMouse1;
                 @Mouse1.performed -= m_Wrapper.m_MouseInputActionsCallbackInterface.OnMouse1;
                 @Mouse1.canceled -= m_Wrapper.m_MouseInputActionsCallbackInterface.OnMouse1;
+                @MousePosition.started -= m_Wrapper.m_MouseInputActionsCallbackInterface.OnMousePosition;
+                @MousePosition.performed -= m_Wrapper.m_MouseInputActionsCallbackInterface.OnMousePosition;
+                @MousePosition.canceled -= m_Wrapper.m_MouseInputActionsCallbackInterface.OnMousePosition;
             }
             m_Wrapper.m_MouseInputActionsCallbackInterface = instance;
             if (instance != null)
@@ -527,6 +553,9 @@ public partial class @InputManager : IInputActionCollection2, IDisposable
                 @Mouse1.started += instance.OnMouse1;
                 @Mouse1.performed += instance.OnMouse1;
                 @Mouse1.canceled += instance.OnMouse1;
+                @MousePosition.started += instance.OnMousePosition;
+                @MousePosition.performed += instance.OnMousePosition;
+                @MousePosition.canceled += instance.OnMousePosition;
             }
         }
     }
@@ -578,6 +607,7 @@ public partial class @InputManager : IInputActionCollection2, IDisposable
         void OnMouseDelta(InputAction.CallbackContext context);
         void OnMouse0(InputAction.CallbackContext context);
         void OnMouse1(InputAction.CallbackContext context);
+        void OnMousePosition(InputAction.CallbackContext context);
     }
     public interface IUIActions
     {

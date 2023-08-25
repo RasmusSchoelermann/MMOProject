@@ -15,6 +15,11 @@ public class PlayerMovement : NetworkBehaviour
 
     private float _currentMovementSpeed;
 
+    private Vector3 _moveDirection;
+
+    [SerializeField]
+    private float _groundDrag;
+
     public void InitializePlayerMovement(ClientAuthPlayerController controller, PlayerRotation rotation, CameraMovement cam)
     {
         clientController = controller;
@@ -25,76 +30,73 @@ public class PlayerMovement : NetworkBehaviour
     public void CheckPlayerMovement()
     {
         _currentMovementSpeed = clientController.MovementSpeed;
-        if(!clientController.IsGrounded())
+        VelocityControl();
+
+        if (!clientController.IsGrounded())
         {
             FallingControls();
+            clientController.playerRigidbody.drag = 0f;
             return;
         }
-        ApplyMovement();
+
+        clientController.playerRigidbody.drag = _groundDrag;
+
+        if (clientController.Mouse0And1Pressed())
+            ApplyForwardsMovementWithMouse();
+
+        if (clientController.Mouse0Pressed() && clientController.rotationInput != 0)
+            ApplySidewardsMovementAD();
+
+        if (clientController.movementInput != Vector2.zero)
+            ApplyMovement();
+
 
     }
 
     private void ApplyMovement()
     {
-
-
-        /*float currentMovementSpeed = clientController.MovementSpeed;
-        if (clientController.IsGrounded())
+        if (clientController.movementInput.x == 0)
         {
-            float xVelocity = (clientController._movementInput.x * (currentMovementSpeed * 100) * Time.deltaTime);
-            float zVelocity = (clientController._movementInput.y * (currentMovementSpeed * 100) * Time.deltaTime);
-            if (Input.GetMouseButton(1) && clientController._movementInput.x != 0)
-            {
-                ApplySidewardsMovement(xVelocity, zVelocity);
-            }
-            else
-            {
-                _newVelocity.Set(clientController.playerRigidbody.velocity.x, 0.0f, zVelocity);
-            }
-            
-            clientController.playerRigidbody.AddRelativeForce(new Vector3(_newVelocity.x, 0, _newVelocity.z));
-
-
-        }
-        else if(!clientController.IsGrounded())
-        {
-            _newVelocity.Set(clientController._movementInput.x * (currentMovementSpeed * 100) * Time.deltaTime, clientController.playerRigidbody.velocity.y, clientController._movementInput.y * (currentMovementSpeed * 100) * Time.deltaTime);
-            clientController.playerRigidbody.AddRelativeForce(new Vector3(_newVelocity.x, _newVelocity.y, _newVelocity.z));
-        }*/
-
-    }
-
-    private void ApplySidewardsMovement(float xVelocity, float zVelocity)
-    {
-        /*_newVelocity.Set(xVelocity, 0.0f, zVelocity);
-
-        if (zVelocity == 0)
-        {
-            if (clientController._movementInput.x < 0)
-            {
-                playerRotation.RotatePlayerBy(-90);
-            }
-            else
-            {
-                playerRotation.RotatePlayerBy(90);
-            }
+            clientController.SetCameraDamping(1f);
         }
         else
         {
-            if (clientController._movementInput.x < 0 && clientController._movementInput.y != 0)
-            {
-                playerRotation.RotatePlayerBy(-45);
-            }
-            else if(clientController._movementInput.x > 0 && clientController._movementInput.y != 0)
-            {
-                playerRotation.RotatePlayerBy(45);
-            }
-        }*/
+            clientController.SetCameraDamping(0f);
+        }
+
+        _moveDirection = clientController.orientation.forward * clientController.movementInput.y + clientController.orientation.right * clientController.movementInput.x;
+
+        clientController.playerRigidbody.AddForce(_moveDirection.normalized * _currentMovementSpeed * 10f, ForceMode.Force);
+
+        if( clientController.rotationInput != 0)
+        {
+            playerRotation.RotatePlayerOnPoint();
+        }
+
     }
+
+    public void ApplySidewardsMovementAD()
+    {
+        clientController.SetCameraDamping(0f);
+        _moveDirection = clientController.orientation.forward * clientController.movementInput.y + clientController.orientation.right * clientController.rotationInput;
+
+        clientController.playerRigidbody.AddForce(_moveDirection.normalized * _currentMovementSpeed * 10f, ForceMode.Force);
+        //clientController.playerObject.forward = Vector3.Slerp(clientController.orientation.forward, clientController.orientation.right * clientController.rotationInput, Time.deltaTime * clientController.RotationSpeed);
+    }
+
+    public void ApplyForwardsMovementWithMouse()
+    {
+        clientController.SetCameraDamping(0f);
+        _moveDirection = clientController.orientation.forward * 1.0f;
+
+        clientController.playerRigidbody.AddForce(_moveDirection.normalized * _currentMovementSpeed * 10f, ForceMode.Force);
+        clientController.playerObject.forward = Vector3.Slerp(clientController.playerObject.forward, clientController.orientation.forward, Time.deltaTime * clientController.RotationSpeed);
+    }
+
 
     private void FallingControls()
     {
-        _newVelocity.Set(clientController.movementInput.x * _currentMovementSpeed, clientController.playerRigidbody.velocity.y, clientController.movementInput.y * _currentMovementSpeed);
+        _newVelocity.Set(clientController.movementInput.x * _currentMovementSpeed / 2, clientController.playerRigidbody.velocity.y, clientController.movementInput.y * _currentMovementSpeed / 2);
         clientController.playerRigidbody.AddRelativeForce(new Vector3(_newVelocity.x, _newVelocity.y, _newVelocity.z));
     }
 
@@ -102,7 +104,7 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (clientController.IsGrounded())
         {
-            _newJumpForce.Set(0.0f, clientController.MovementSpeed, 0.0f);
+            _newJumpForce.Set(0.0f, clientController.JumpForce, 0.0f);
             clientController.playerRigidbody.AddForce(_newJumpForce, ForceMode.Impulse);
         }
     }
@@ -117,9 +119,19 @@ public class PlayerMovement : NetworkBehaviour
         return false;
     }
 
+    private void VelocityControl()
+    {
+        Vector3 currentVelocity = new Vector3(clientController.playerRigidbody.velocity.x, clientController.playerRigidbody.velocity.y, clientController.playerRigidbody.velocity.z);
+        if(currentVelocity.magnitude > clientController.MovementSpeed)
+        {
+            Vector3 limitedVelocity = currentVelocity.normalized * clientController.MovementSpeed;
+            clientController.playerRigidbody.velocity = new Vector3(limitedVelocity.x, limitedVelocity.y, limitedVelocity.z);
+        }
+    }
+
     public bool IsPlayerMovingSidewards()
     {
-        if(Input.GetMouseButton(1) && clientController.movementInput.x != 0)
+        if(clientController.mouse0 && clientController.rotationInput != 0)
         {
             return true;
         }
