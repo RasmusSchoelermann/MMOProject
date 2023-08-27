@@ -44,7 +44,7 @@ public class PlayerMovement : NetworkBehaviour
         if (clientController.Mouse0And1Pressed())
             ApplyForwardsMovementWithMouse();
 
-        if (clientController.Mouse0Pressed() && clientController.rotationInput != 0)
+        if (clientController.Mouse1Pressed() && clientController.rotationInput != 0)
             ApplySidewardsMovementAD();
 
         if (clientController.movementInput != Vector2.zero)

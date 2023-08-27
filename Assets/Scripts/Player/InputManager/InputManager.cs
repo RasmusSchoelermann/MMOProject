@@ -202,13 +202,13 @@ public partial class @InputManager : IInputActionCollection2, IDisposable
             ""id"": ""77eff67d-bd54-4b30-9f60-4db5601f01aa"",
             ""actions"": [
                 {
-                    ""name"": ""MouseAction"",
-                    ""type"": ""Button"",
+                    ""name"": ""Zoom"",
+                    ""type"": ""Value"",
                     ""id"": ""0e7a4c38-42f4-49e4-a538-93b76020e4f0"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": ""Vector2"",
                     ""processors"": """",
                     ""interactions"": """",
-                    ""initialStateCheck"": false
+                    ""initialStateCheck"": true
                 },
                 {
                     ""name"": ""MouseDelta"",
@@ -248,39 +248,6 @@ public partial class @InputManager : IInputActionCollection2, IDisposable
                 }
             ],
             ""bindings"": [
-                {
-                    ""name"": ""MouseScroll"",
-                    ""id"": ""3c34f927-2aaa-42c2-8e5c-83c7b4c62976"",
-                    ""path"": ""1DAxis"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""MouseAction"",
-                    ""isComposite"": true,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": ""negative"",
-                    ""id"": ""d059020d-357f-44b2-8ac5-5ed6acabb2f4"",
-                    ""path"": ""<Mouse>/scroll/down"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""MouseAction"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""positive"",
-                    ""id"": ""2d04e89d-ea2a-4525-99c0-00a7f9ab9412"",
-                    ""path"": ""<Mouse>/scroll/up"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""MouseAction"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
                 {
                     ""name"": """",
                     ""id"": ""261bcedb-c31b-4cb5-93b5-558a9c8bf68a"",
@@ -322,6 +289,17 @@ public partial class @InputManager : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""MousePosition"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ae80698d-2932-4ab9-8802-4a6492f67b04"",
+                    ""path"": ""<Mouse>/scroll"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Zoom"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -367,7 +345,7 @@ public partial class @InputManager : IInputActionCollection2, IDisposable
         m_Movement_CharacterAction = m_Movement.FindAction("CharacterAction", throwIfNotFound: true);
         // MouseInput
         m_MouseInput = asset.FindActionMap("MouseInput", throwIfNotFound: true);
-        m_MouseInput_MouseAction = m_MouseInput.FindAction("MouseAction", throwIfNotFound: true);
+        m_MouseInput_Zoom = m_MouseInput.FindAction("Zoom", throwIfNotFound: true);
         m_MouseInput_MouseDelta = m_MouseInput.FindAction("MouseDelta", throwIfNotFound: true);
         m_MouseInput_Mouse0 = m_MouseInput.FindAction("Mouse0", throwIfNotFound: true);
         m_MouseInput_Mouse1 = m_MouseInput.FindAction("Mouse1", throwIfNotFound: true);
@@ -499,7 +477,7 @@ public partial class @InputManager : IInputActionCollection2, IDisposable
     // MouseInput
     private readonly InputActionMap m_MouseInput;
     private IMouseInputActions m_MouseInputActionsCallbackInterface;
-    private readonly InputAction m_MouseInput_MouseAction;
+    private readonly InputAction m_MouseInput_Zoom;
     private readonly InputAction m_MouseInput_MouseDelta;
     private readonly InputAction m_MouseInput_Mouse0;
     private readonly InputAction m_MouseInput_Mouse1;
@@ -508,7 +486,7 @@ public partial class @InputManager : IInputActionCollection2, IDisposable
     {
         private @InputManager m_Wrapper;
         public MouseInputActions(@InputManager wrapper) { m_Wrapper = wrapper; }
-        public InputAction @MouseAction => m_Wrapper.m_MouseInput_MouseAction;
+        public InputAction @Zoom => m_Wrapper.m_MouseInput_Zoom;
         public InputAction @MouseDelta => m_Wrapper.m_MouseInput_MouseDelta;
         public InputAction @Mouse0 => m_Wrapper.m_MouseInput_Mouse0;
         public InputAction @Mouse1 => m_Wrapper.m_MouseInput_Mouse1;
@@ -522,9 +500,9 @@ public partial class @InputManager : IInputActionCollection2, IDisposable
         {
             if (m_Wrapper.m_MouseInputActionsCallbackInterface != null)
             {
-                @MouseAction.started -= m_Wrapper.m_MouseInputActionsCallbackInterface.OnMouseAction;
-                @MouseAction.performed -= m_Wrapper.m_MouseInputActionsCallbackInterface.OnMouseAction;
-                @MouseAction.canceled -= m_Wrapper.m_MouseInputActionsCallbackInterface.OnMouseAction;
+                @Zoom.started -= m_Wrapper.m_MouseInputActionsCallbackInterface.OnZoom;
+                @Zoom.performed -= m_Wrapper.m_MouseInputActionsCallbackInterface.OnZoom;
+                @Zoom.canceled -= m_Wrapper.m_MouseInputActionsCallbackInterface.OnZoom;
                 @MouseDelta.started -= m_Wrapper.m_MouseInputActionsCallbackInterface.OnMouseDelta;
                 @MouseDelta.performed -= m_Wrapper.m_MouseInputActionsCallbackInterface.OnMouseDelta;
                 @MouseDelta.canceled -= m_Wrapper.m_MouseInputActionsCallbackInterface.OnMouseDelta;
@@ -541,9 +519,9 @@ public partial class @InputManager : IInputActionCollection2, IDisposable
             m_Wrapper.m_MouseInputActionsCallbackInterface = instance;
             if (instance != null)
             {
-                @MouseAction.started += instance.OnMouseAction;
-                @MouseAction.performed += instance.OnMouseAction;
-                @MouseAction.canceled += instance.OnMouseAction;
+                @Zoom.started += instance.OnZoom;
+                @Zoom.performed += instance.OnZoom;
+                @Zoom.canceled += instance.OnZoom;
                 @MouseDelta.started += instance.OnMouseDelta;
                 @MouseDelta.performed += instance.OnMouseDelta;
                 @MouseDelta.canceled += instance.OnMouseDelta;
@@ -603,7 +581,7 @@ public partial class @InputManager : IInputActionCollection2, IDisposable
     }
     public interface IMouseInputActions
     {
-        void OnMouseAction(InputAction.CallbackContext context);
+        void OnZoom(InputAction.CallbackContext context);
         void OnMouseDelta(InputAction.CallbackContext context);
         void OnMouse0(InputAction.CallbackContext context);
         void OnMouse1(InputAction.CallbackContext context);

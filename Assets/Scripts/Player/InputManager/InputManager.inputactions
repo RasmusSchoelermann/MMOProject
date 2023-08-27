@@ -180,13 +180,13 @@
             "id": "77eff67d-bd54-4b30-9f60-4db5601f01aa",
             "actions": [
                 {
-                    "name": "MouseAction",
-                    "type": "Button",
+                    "name": "Zoom",
+                    "type": "Value",
                     "id": "0e7a4c38-42f4-49e4-a538-93b76020e4f0",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "Vector2",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": false
+                    "initialStateCheck": true
                 },
                 {
                     "name": "MouseDelta",
@@ -226,39 +226,6 @@
                 }
             ],
             "bindings": [
-                {
-                    "name": "MouseScroll",
-                    "id": "3c34f927-2aaa-42c2-8e5c-83c7b4c62976",
-                    "path": "1DAxis",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "MouseAction",
-                    "isComposite": true,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "negative",
-                    "id": "d059020d-357f-44b2-8ac5-5ed6acabb2f4",
-                    "path": "<Mouse>/scroll/down",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "MouseAction",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "positive",
-                    "id": "2d04e89d-ea2a-4525-99c0-00a7f9ab9412",
-                    "path": "<Mouse>/scroll/up",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "MouseAction",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
                 {
                     "name": "",
                     "id": "261bcedb-c31b-4cb5-93b5-558a9c8bf68a",
@@ -300,6 +267,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "MousePosition",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ae80698d-2932-4ab9-8802-4a6492f67b04",
+                    "path": "<Mouse>/scroll",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Zoom",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

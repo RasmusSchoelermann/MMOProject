@@ -38,6 +38,8 @@ public class ClientAuthPlayerController : NetworkBehaviour
     [SerializeField]
     private float rotationSpeed;
     [SerializeField]
+    private float zoomAmount = 0f;
+    [SerializeField]
     private float mouseSensitivity = 3.0f;
 
     public bool mouse0;
@@ -75,12 +77,24 @@ public class ClientAuthPlayerController : NetworkBehaviour
             rotationSpeed = value;
         }
     }
+    public float ZoomAmount
+    {
+        get { return zoomAmount; }
+        set
+        {
+            if (value <= 3 && value >= -3)
+                zoomAmount = value;
+
+        }
+    }
 
     public float MouseSensitivity
     {
         get { return mouseSensitivity; }
         set { mouseSensitivity = value; }
     }
+
+
 
     [SerializeField]
     private LayerMask groundLayer;
@@ -126,8 +140,10 @@ public class ClientAuthPlayerController : NetworkBehaviour
         inputManager.MouseInput.Mouse1.canceled += ctx => mouse1 = false;
 
         inputManager.MouseInput.MouseDelta.performed += ctx => MouseInput(ctx.ReadValue<Vector2>());
-        //inputManager.MouseInput.MouseDelta.canceled += ctx => MouseInput(mouseInput = new Vector2(0, 0));
+
         inputManager.MouseInput.MousePosition.performed += ctx => MousePosition(ctx.ReadValue<Vector2>());
+
+        inputManager.MouseInput.Zoom.performed += ctx => MouseZoom(ctx.ReadValue<Vector2>().normalized);
     }
 
     private void OnEnable()
@@ -145,7 +161,6 @@ public class ClientAuthPlayerController : NetworkBehaviour
         if (!IsOwner)
             return;
         cameraMovement.ApplyCameraRotation();
-        //MouseInput();
     }
 
     private void FixedUpdate()
@@ -198,6 +213,13 @@ public class ClientAuthPlayerController : NetworkBehaviour
     {
         mPos.Normalize();
         mousePosition = mPos;
+    }
+
+    private void MouseZoom(Vector2 mZoom)
+    {
+        ZoomAmount += mZoom.y;
+        Debug.Log(ZoomAmount);
+        cameraMovement.ZoomCamera();
     }
 
     public void SetCameraDamping(float value)

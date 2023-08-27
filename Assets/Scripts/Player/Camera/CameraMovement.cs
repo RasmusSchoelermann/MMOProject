@@ -12,14 +12,17 @@ public class CameraMovement : MonoBehaviour
 
     private Vector2 previousMousePos = Vector2.zero;
 
+    [SerializeField]
+    private float[] orbitRadius;
+    [SerializeField]
+    private float[] orbitHeight;
+
 
     public void InitializeCamera(ClientAuthPlayerController controller, PlayerMovement pMovement, PlayerRotation protation)
     {
         clientController = controller;
         playerMovement = pMovement;
         playerRotation = protation;
-
-        //_cameraOffset = transform.position - clientController.playerObject.position;
     }
 
     public void ApplyCameraRotation()
@@ -42,9 +45,18 @@ public class CameraMovement : MonoBehaviour
         }
     }
 
+    public void ZoomCamera()
+    {
+        for(int i = 0; i < 3; i++) 
+        {
+            clientController.cinemachineCameraSettings.m_Orbits[i].m_Radius = orbitRadius[i] + -clientController.ZoomAmount;
+            clientController.cinemachineCameraSettings.m_Orbits[i].m_Height = orbitHeight[i] + -clientController.ZoomAmount;
+        }
+    }
+
     public void CharacterViewDirection()
     {
-        Vector3 viewDirection = clientController.player.position - new Vector3(transform.position.x, clientController.player.position.y, transform.position.z);
+        Vector3 viewDirection = clientController.playerObject.position - new Vector3(transform.position.x, clientController.player.position.y, transform.position.z);
         if (viewDirection != Vector3.zero)
             clientController.orientation.forward = viewDirection.normalized;
     }
