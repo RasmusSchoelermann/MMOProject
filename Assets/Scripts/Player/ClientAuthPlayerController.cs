@@ -2,19 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
-using Steamworks;
-using System;
-using Cinemachine;
 
 public class ClientAuthPlayerController : NetworkBehaviour
 {
     private InputManager inputManager;
-    [SerializeField]
     private PlayerMovement playerMovement;
-    [SerializeField]
     private PlayerRotation playerRotation;
-    [SerializeField]
     private CameraMovement cameraMovement;
+    private PlayerInteraction playerInteraction;
+    private PlayerCombat playerCombat;
 
     public Rigidbody playerRigidbody;
     public CapsuleCollider playerCollider;
@@ -24,77 +20,14 @@ public class ClientAuthPlayerController : NetworkBehaviour
     public Transform orientation;
 
     public Camera playerCam;
-    public CinemachineFreeLook cinemachineCameraSettings;
 
     public Vector2 movementInput;
     public Vector2 mouseInput = Vector2.zero;
     public Vector2 mousePosition = Vector2.zero;
     public float rotationInput;
 
-    [SerializeField]
-    private float movementSpeed;
-    [SerializeField]
-    private float jumpForce;
-    [SerializeField]
-    private float rotationSpeed;
-    [SerializeField]
-    private float zoomAmount = 0f;
-    [SerializeField]
-    private float mouseSensitivity = 3.0f;
-
     public bool mouse0;
     public bool mouse1;
-
-    public float MovementSpeed
-    {
-        get { return movementSpeed; }
-        set
-        {
-            if (value > 30)
-                throw new ArgumentException("Movementspeed Cap exceeded");
-            movementSpeed = value;
-        }
-    }
-
-    public float JumpForce
-    {
-        get { return jumpForce; }
-        set
-        {
-            if (value > 10)
-                throw new ArgumentException("Jump force cap exceeded");
-            jumpForce = value;
-        }
-    }
-
-    public float RotationSpeed
-    {
-        get { return rotationSpeed; }
-        set
-        {
-            if (value > 200)
-                throw new ArgumentException("Rotation Speed cap exceeded");
-            rotationSpeed = value;
-        }
-    }
-    public float ZoomAmount
-    {
-        get { return zoomAmount; }
-        set
-        {
-            if (value <= 3 && value >= -3)
-                zoomAmount = value;
-
-        }
-    }
-
-    public float MouseSensitivity
-    {
-        get { return mouseSensitivity; }
-        set { mouseSensitivity = value; }
-    }
-
-
 
     [SerializeField]
     private LayerMask groundLayer;
@@ -111,14 +44,35 @@ public class ClientAuthPlayerController : NetworkBehaviour
         if (!IsOwner)
             return;
 
-        playerMovement.InitializePlayerMovement(this, playerRotation, cameraMovement);
-        playerRotation.InitializePlayerRotation(this);
-        cameraMovement.InitializeCamera(this, playerMovement, playerRotation);
+        playerMovement.InitializeMovement();
+        playerRotation.InitializePlayerRotation(this, cameraMovement);
+        cameraMovement.InitializeCamera(this);
+        playerInteraction.InitializePlayerInteraction(this, playerCombat);
+
     }
 
     private void Awake()
     {
+        SetupRefs();
         SetupInput();
+    }
+
+    private void SetupRefs()
+    {
+        if(gameObject.GetComponent<PlayerMovement>() != null)
+            playerMovement = GetComponent<PlayerMovement>();
+
+        if(gameObject.GetComponent<PlayerRotation>() != null)
+            playerRotation = GetComponent<PlayerRotation>();
+
+        if(gameObject.GetComponentInChildren<CameraMovement>() != null)
+            cameraMovement = GetComponentInChildren<CameraMovement>();
+
+        if(gameObject.GetComponent<PlayerInteraction>() != null)
+            playerInteraction = GetComponent<PlayerInteraction>();
+        
+        if(gameObject.GetComponent<PlayerCombat>() != null)
+            playerCombat = GetComponent<PlayerCombat>();
     }
 
     private void SetupInput()
@@ -178,6 +132,8 @@ public class ClientAuthPlayerController : NetworkBehaviour
     {
         mouse0 = true;
 
+        EventManager.OnMouseClickRayCast.Invoke(mousePosition);
+
         if(rotationInput != 0)
         {
             playerMovement.ApplySidewardsMovementAD();
@@ -211,24 +167,13 @@ public class ClientAuthPlayerController : NetworkBehaviour
 
     private void MousePosition(Vector2 mPos)
     {
-        mPos.Normalize();
         mousePosition = mPos;
     }
 
     private void MouseZoom(Vector2 mZoom)
     {
-        ZoomAmount += mZoom.y;
-        Debug.Log(ZoomAmount);
+        cameraMovement.ZoomAmount += mZoom.y;
         cameraMovement.ZoomCamera();
-    }
-
-    public void SetCameraDamping(float value)
-    {
-        for (int i = 0; i < 3; i++)
-        {
-            CinemachineOrbitalTransposer transposer = cinemachineCameraSettings.GetRig(i).GetCinemachineComponent<CinemachineOrbitalTransposer>();
-            transposer.m_XDamping = value;
-        }
     }
 
     public bool Mouse0And1Pressed()

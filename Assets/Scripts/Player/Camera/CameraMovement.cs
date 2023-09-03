@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Cinemachine;
 
@@ -7,8 +5,6 @@ using Cinemachine;
 public class CameraMovement : MonoBehaviour
 {
     private ClientAuthPlayerController clientController;
-    private PlayerMovement playerMovement;
-    private PlayerRotation playerRotation;
 
     private Vector2 previousMousePos = Vector2.zero;
 
@@ -17,12 +13,35 @@ public class CameraMovement : MonoBehaviour
     [SerializeField]
     private float[] orbitHeight;
 
+    public CinemachineFreeLook cinemachineCameraSettings;
 
-    public void InitializeCamera(ClientAuthPlayerController controller, PlayerMovement pMovement, PlayerRotation protation)
+    [SerializeField]
+    private float zoomAmount = 0f;
+    [SerializeField]
+    private float mouseSensitivity = 3.0f;
+
+    public float ZoomAmount
+    {
+        get { return zoomAmount; }
+        set
+        {
+            if (value <= 3 && value >= -3)
+                zoomAmount = value;
+
+        }
+    }
+
+    public float MouseSensitivity
+    {
+        get { return mouseSensitivity; }
+        set { mouseSensitivity = value; }
+    }
+
+
+    public void InitializeCamera(ClientAuthPlayerController controller)
     {
         clientController = controller;
-        playerMovement = pMovement;
-        playerRotation = protation;
+        EventManager.OnCamDampChanged.AddListener(SetCameraDamping);
     }
 
     public void ApplyCameraRotation()
@@ -32,25 +51,27 @@ public class CameraMovement : MonoBehaviour
             Vector2 mousePos = clientController.mousePosition;
 
             Vector2 input = clientController.mouseInput;
-            input.x = input.x * clientController.MouseSensitivity;
-            input.y = -input.y * clientController.MouseSensitivity;
+            input.x = input.x * MouseSensitivity;
+            input.y = -input.y * MouseSensitivity;
 
             if(previousMousePos != mousePos)
             {
-                clientController.cinemachineCameraSettings.m_XAxis.Value += input.x * 50f * Time.deltaTime;
-                clientController.cinemachineCameraSettings.m_YAxis.Value += input.y * Time.deltaTime;
+                cinemachineCameraSettings.m_XAxis.Value += input.x * 50f * Time.deltaTime;
+                cinemachineCameraSettings.m_YAxis.Value += input.y * Time.deltaTime;
                 previousMousePos = mousePos;
             }
 
         }
     }
 
+
+
     public void ZoomCamera()
     {
         for(int i = 0; i < 3; i++) 
         {
-            clientController.cinemachineCameraSettings.m_Orbits[i].m_Radius = orbitRadius[i] + -clientController.ZoomAmount;
-            clientController.cinemachineCameraSettings.m_Orbits[i].m_Height = orbitHeight[i] + -clientController.ZoomAmount;
+            cinemachineCameraSettings.m_Orbits[i].m_Radius = orbitRadius[i] + -ZoomAmount;
+            cinemachineCameraSettings.m_Orbits[i].m_Height = orbitHeight[i] + -ZoomAmount;
         }
     }
 
@@ -59,6 +80,15 @@ public class CameraMovement : MonoBehaviour
         Vector3 viewDirection = clientController.playerObject.position - new Vector3(transform.position.x, clientController.player.position.y, transform.position.z);
         if (viewDirection != Vector3.zero)
             clientController.orientation.forward = viewDirection.normalized;
+    }
+
+    public void SetCameraDamping(float value)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            CinemachineOrbitalTransposer transposer = cinemachineCameraSettings.GetRig(i).GetCinemachineComponent<CinemachineOrbitalTransposer>();
+            transposer.m_XDamping = value;
+        }
     }
 
 

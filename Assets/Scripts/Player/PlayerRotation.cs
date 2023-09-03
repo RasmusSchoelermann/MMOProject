@@ -1,15 +1,29 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
+using System;
 
 public class PlayerRotation : MonoBehaviour
 {
     private ClientAuthPlayerController clientController;
+    private CameraMovement cameraMovement;
 
-    public void InitializePlayerRotation(ClientAuthPlayerController controller)
+    [SerializeField]
+    private float rotationSpeed = 10;
+
+    public float RotationSpeed
+    {
+        get { return rotationSpeed; }
+        set
+        {
+            if (value > 200)
+                throw new ArgumentException("Rotation Speed cap exceeded");
+            rotationSpeed = value;
+        }
+    }
+
+    public void InitializePlayerRotation(ClientAuthPlayerController controller, CameraMovement camMove)
     {
         clientController = controller;
+        cameraMovement = camMove;
     }
 
     public void CheckRotationInput()
@@ -30,14 +44,14 @@ public class PlayerRotation : MonoBehaviour
         Vector3 inputDirection = clientController.orientation.forward * clientController.movementInput.y + clientController.orientation.right * clientController.movementInput.x;
         if(inputDirection != Vector3.zero)
         {
-            clientController.playerObject.forward = Vector3.Slerp(clientController.playerObject.forward, inputDirection.normalized, Time.deltaTime * clientController.RotationSpeed);
+            clientController.playerObject.forward = Vector3.Slerp(clientController.playerObject.forward, inputDirection.normalized, Time.deltaTime * RotationSpeed);
         }
     }
 
     public void RotatePlayerOnPoint()
     {
-        clientController.cinemachineCameraSettings.m_XAxis.Value += clientController.rotationInput * 50f * Time.deltaTime;
-        clientController.playerObject.forward = Vector3.Slerp(clientController.playerObject.forward, clientController.orientation.forward, Time.deltaTime * clientController.RotationSpeed);
+        cameraMovement.cinemachineCameraSettings.m_XAxis.Value += clientController.rotationInput * 50f * Time.deltaTime;
+        clientController.playerObject.forward = Vector3.Slerp(clientController.playerObject.forward, clientController.orientation.forward, Time.deltaTime * RotationSpeed);
     }
    
     public bool IsPlayerOnlyRotating()
